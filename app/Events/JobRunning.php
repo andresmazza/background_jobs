@@ -22,9 +22,8 @@ class JobRunning
         $payload = unserialize($customJob->payload);
         $customJob->status = CustomJob::RUNNING;
         $customJob->description = "RUNNING";
-        // -  Try (". $customJob->attempts . "/" . $payload->maxRetries. ")";
         if ($customJob->attempts > 1) {
-            $customJob->description .= " retrying (". $customJob->attempts . "/" . $payload->maxRetries. ")";
+            $customJob->description .= " retrying (" . $customJob->attempts . "/" . $payload->maxRetries . ")";
         }
         $customJob->save();
 

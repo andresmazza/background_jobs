@@ -13,15 +13,15 @@ if (!function_exists('runBackgroundJob')) {
      * @param array $options - The options for the job, currently only accepts 'delay'
      * @return void
      */
-    function runBackgroundJob($class, $method, $params = [], $options = [])
+    function runBackgroundJob($class, $method, $params = null, $options = [])
     {
-        Log::channel(channel: 'background_jobs')->info('Queue Job: ' . $class . ' - ' . $method . ' - ' . json_encode($params));
+     //   Log::channel(channel: 'background_jobs')->info('Queue Job: ' . $class . ' - ' . $method . ' - ' . json_encode($params));
 
-        $command = "php " . base_path('artisan') . " job:run-background-job '$class' $method";
-
-        foreach ($params as $param) {
-            $command .= " --params=" . escapeshellarg($param);
+        $command = "php " . base_path('artisan') . " job:run '$class' $method";
+        if ($params) {
+            $command .= " --params=" . escapeshellarg($params);
         }
+        
 
         if (isset($options['delay'])) {
             $command = "sleep {$options['delay']} && $command";

@@ -33,15 +33,8 @@ class RunBackgroundJob extends Command
      */
     protected $description = 'Run a background job';
 
-    // public $pid;
      public $signal;
-    // public $jobClassName;
-    // public $jobMethodName;
-    // public $jobParams;
-    // public $maxRetries = 2;
-    // public $retryDelay;
-    // public $attempt = 1;
-
+    
     /**
      * Execute the console command.
      */
@@ -58,12 +51,7 @@ class RunBackgroundJob extends Command
 
         $cj = new CustomJob();
         $cj->pid = $pid;
-        $payload = new \stdClass();
-        $payload->class = $class;
-        $payload->method = $method;
-        $payload->params = [$params];
-        $payload->maxRetries = $maxRetries;
-        $payload->retryDelay = $retryDelay;
+        $payload = $this->createPayload($class, $method, $params, $maxRetries, $retryDelay); 
         $cj->payload = serialize($payload);
 
         //Queued Job
@@ -79,6 +67,7 @@ class RunBackgroundJob extends Command
             $this->error($errorMessage);
             $cj->description = $errorMessage;
             EventJobError::dispatch($cj);
+
             return RunBackgroundJob::ERROR;
         }
         // Create an instance of the class that will be triggered by the JOB
@@ -98,10 +87,11 @@ class RunBackgroundJob extends Command
                     EventJobCanceled::dispatch($cj);
                     exit;
                 }
-               // $cj->status = CustomJob::RUNNING;
+               
+                //Launch Job
                 JobRunning::dispatch($cj);
 
-                $rep = $instance->$method(...$params);
+                $instance->$method(...$params);
 
                 EventJobDone::dispatch($cj);
 
@@ -119,7 +109,6 @@ class RunBackgroundJob extends Command
 
     }
 
-    //@TODO remove parameters
 
     private function validateClassAndMethod($class, $method)
     {
@@ -130,6 +119,18 @@ class RunBackgroundJob extends Command
 
         return in_array($class, $allowedClasses) && method_exists($class, $method);
 
+    }
+
+
+    private function createPayload($class, $method, $params, $maxRetries, $retryDelay) {
+        $payload = new \stdClass();
+        $payload->class = $class;
+        $payload->method = $method;
+        $payload->params = [$params];
+        $payload->maxRetries = $maxRetries;
+        $payload->retryDelay = $retryDelay;
+
+        return $payload;
     }
 
 }

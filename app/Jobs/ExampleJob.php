@@ -2,20 +2,24 @@
 
 namespace App\Jobs;
 
+use Illuminate\Console\Concerns\InteractsWithIO;
+
 class ExampleJob
 {
-    
-    public function handle($param1 = null)
+ 
+    public function handle($params = 0)
     {
+        
         // Simulate some work
-        sleep(seconds: 3600);
+        sleep($params);
         
         // Simulate a potential failure
-       //if (rand(0, 1) === 0) {
-        if (true) {
+       if (rand(0, 1) === 0) {
             throw new \Exception("Random failure occurred");
         }
 
-        return "Job completed with params: $param1";
+        return "Job completed with params: $params";
     }
+
+    
 }
