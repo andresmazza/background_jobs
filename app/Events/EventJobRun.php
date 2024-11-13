@@ -10,7 +10,7 @@ use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 use Log;
 
-class JobRunning
+class EventJobRun
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 

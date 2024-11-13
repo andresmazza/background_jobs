@@ -29,7 +29,6 @@ class BackgroundJobController extends Controller
         $class = $request->input('class');
         $method = $request->input('method');
         $params = $request->input('params', null);
-        //$params = explode(',', $params);
         try {
             runBackgroundJob($class, $method, $params);
         } catch (\Exception $e) {

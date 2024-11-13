@@ -18,7 +18,6 @@ class JobLog
         Log::channel(channel: 'background_jobs')->info($message);
     }
 
-
     public static function error(CustomJob $customJob): void
     {
 

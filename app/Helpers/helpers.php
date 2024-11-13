@@ -1,7 +1,5 @@
 <?php
 
-use Illuminate\Support\Facades\Artisan;
-
 if (!function_exists('runBackgroundJob')) {
 
     /**
@@ -15,13 +13,11 @@ if (!function_exists('runBackgroundJob')) {
      */
     function runBackgroundJob($class, $method, $params = null, $options = [])
     {
-     //   Log::channel(channel: 'background_jobs')->info('Queue Job: ' . $class . ' - ' . $method . ' - ' . json_encode($params));
-
         $command = "php " . base_path('artisan') . " job:run '$class' $method";
         if ($params) {
             $command .= " --params=" . escapeshellarg($params);
         }
-        
+
 
         if (isset($options['delay'])) {
             $command = "sleep {$options['delay']} && $command";
@@ -34,5 +30,5 @@ if (!function_exists('runBackgroundJob')) {
         }
     }
 
- 
+
 }
