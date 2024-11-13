@@ -2,6 +2,7 @@
 
 namespace App\Events;
 
+use App\Logging\JobLog;
 use App\Models\CustomJob;
 use Illuminate\Broadcasting\InteractsWithSockets;
 
@@ -19,8 +20,13 @@ class JobRunning
     public function __construct(public CustomJob $customJob)
     {
         $payload = unserialize($customJob->payload);
-        
-        Log::channel(channel: 'background_jobs')->info('Job[' . $customJob->pid . '] - Status: Running  ('. $customJob->attempts . '/' . $payload->maxRetries . ')' );
+        $customJob->status = CustomJob::RUNNING;
+        $customJob->description = "RUNNING";
+        // -  Try (". $customJob->attempts . "/" . $payload->maxRetries. ")";
+        if ($customJob->attempts > 1) {
+            $customJob->description .= " retrying (". $customJob->attempts . "/" . $payload->maxRetries. ")";
+        }
+        $customJob->save();
 
     }
 

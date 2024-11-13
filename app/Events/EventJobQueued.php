@@ -2,6 +2,7 @@
 
 namespace App\Events;
 
+use App\Logging\JobLog;
 use App\Models\CustomJob;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
@@ -12,7 +13,7 @@ use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 use Log;
 
-class JobQueued
+class EventJobQueued
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -21,7 +22,9 @@ class JobQueued
      */
     public function __construct(public CustomJob $customJob)
     {
-        Log::channel('background_jobs')->info('Job[' . $customJob->pid . '] - Status: Queued' );
+        $customJob->status = CustomJob::QUEUED;
+        $customJob->description = "QUEUED";
+        $customJob->save();
     }
 
 }

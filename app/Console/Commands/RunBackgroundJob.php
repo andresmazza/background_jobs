@@ -2,14 +2,14 @@
 
 namespace App\Console\Commands;
 
-use App\Events\JobCanceled;
-use App\Events\JobDone;
-use App\Events\JobError;
-use App\Events\JobQueued;
+use App\Events\EventJobCanceled;
+use App\Events\EventJobDone;
+use App\Events\EventJobError;
+use App\Events\EventJobQueued;
 use App\Events\JobRunning;
 use App\Models\CustomJob;
-use Exception;
 use Illuminate\Console\Command;
+use Exception;
 
 class RunBackgroundJob extends Command
 {
@@ -64,10 +64,10 @@ class RunBackgroundJob extends Command
         $payload->params = [$params];
         $payload->maxRetries = $maxRetries;
         $payload->retryDelay = $retryDelay;
-        $cj->payload = $payload;
+        $cj->payload = serialize($payload);
 
         //Queued Job
-        JobQueued::dispatch($cj);
+        EventJobQueued::dispatch($cj);
 
         $this->info('Job queued [ ' . $pid. ' ]');
 
@@ -78,7 +78,7 @@ class RunBackgroundJob extends Command
 
             $this->error($errorMessage);
             $cj->description = $errorMessage;
-            JobError::dispatch($cj);
+            EventJobError::dispatch($cj);
             return RunBackgroundJob::ERROR;
         }
         // Create an instance of the class that will be triggered by the JOB
@@ -89,35 +89,34 @@ class RunBackgroundJob extends Command
             $this->signal = $signal;
             return RunBackgroundJob::CANCELED;
         });
-      //  $this->maxRetries = config('background-jobs.max_retries', 3);
-      //  $this->retryDelay = config('background-jobs.retry_delay', 5); //retry delay in Seconds
+
 
         try {
             return retry($maxRetries, function (int $attempt) use ($instance, $cj,$method,$params) {
                 $cj->attempts = $attempt;
                 if ($this->signal) {
-                    JobCanceled::dispatch($cj);
+                    EventJobCanceled::dispatch($cj);
                     exit;
                 }
-
+               // $cj->status = CustomJob::RUNNING;
                 JobRunning::dispatch($cj);
 
-                $instance->$method(...$params);
+                $rep = $instance->$method(...$params);
 
-                JobDone::dispatch($cj);
+                EventJobDone::dispatch($cj);
 
             }, function (int $attempt, $exception) use ($cj,$maxRetries,$retryDelay) {
 
-                $cj->description = "Retrying (" . $attempt . "/" . $maxRetries . ") " . $exception->getMessage();
-                $cj->status = CustomJob::ERROR;
-                JobError::dispatch($cj);
+                // $cj->description = "Retrying (" . $attempt . "/" . $maxRetries . ") " . $exception->getMessage();
+                // $cj->status = CustomJob::ERROR;
+                EventJobError::dispatch($cj);
 
                 return $retryDelay;
             });
         } catch (Exception $exception) {
             $cj->status = CustomJob::ERROR;
             $cj->description = $exception->getMessage();
-            JobError::dispatch($cj);
+            EventJobError::dispatch($cj);
         }
 
 
