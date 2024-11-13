@@ -22,7 +22,6 @@ class JobQueued
     public function __construct(public CustomJob $customJob)
     {
         Log::channel('background_jobs')->info('Job[' . $customJob->pid . '] - Status: Queued' );
-
     }
 
 }

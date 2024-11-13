@@ -8,10 +8,10 @@ class ExampleJob
     public function handle($param1 = null)
     {
         // Simulate some work
-        sleep(20);
+        sleep(5);
         
         // Simulate a potential failure
-        if (rand(0, 1) !== 10) {
+        if (rand(0, 1) === 0) {
             throw new \Exception("Random failure occurred");
         }
 

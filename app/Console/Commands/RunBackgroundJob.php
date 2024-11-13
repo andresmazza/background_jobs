@@ -10,7 +10,6 @@ use App\Events\JobRunning;
 use App\Models\CustomJob;
 use Exception;
 use Illuminate\Console\Command;
-use Log;
 
 class RunBackgroundJob extends Command
 {
@@ -34,48 +33,48 @@ class RunBackgroundJob extends Command
      */
     protected $description = 'Run a background job';
 
-    public $pid;
-    public $signal;
-    public $jobClassName;
-    public $jobMethodName;
-    public $jobParams;
-    public $maxRetries = 2;
-    public $retryDelay;
-    public $attempt = 1;
+    // public $pid;
+     public $signal;
+    // public $jobClassName;
+    // public $jobMethodName;
+    // public $jobParams;
+    // public $maxRetries = 2;
+    // public $retryDelay;
+    // public $attempt = 1;
 
     /**
      * Execute the console command.
      */
     public function handle()
     {
-        $jobClassName = $this->argument('class');
-        $jobMethodName = $this->argument('method');
-        $jobParams = $this->option('params');
+        $class = $this->argument('class');
+        $method = $this->argument('method');
+        $params = $this->option('params');
         $pid = getmypid();
 
-        $this->maxRetries = config('background-jobs.max_retries', 3);
-        $this->retryDelay = config('background-jobs.retry_delay', 5); //retry delay in Seconds
+        $maxRetries = config('background-jobs.max_retries', 3);
+        $retryDelay = config('background-jobs.retry_delay', 5); //retry delay in Seconds
 
 
         $cj = new CustomJob();
-        $cj->pid = $this->pid;
+        $cj->pid = $pid;
         $payload = new \stdClass();
-        $payload->class = $this->jobClassName;
-        $payload->method = $this->jobMethodName;
-        $payload->params = [$this->jobParams];
-        $payload->maxRetries = $this->maxRetries;
-        $payload->retryDelay = $this->retryDelay;
+        $payload->class = $class;
+        $payload->method = $method;
+        $payload->params = [$params];
+        $payload->maxRetries = $maxRetries;
+        $payload->retryDelay = $retryDelay;
         $cj->payload = $payload;
 
         //Queued Job
         JobQueued::dispatch($cj);
 
-        $this->info('Job queued [ ' . $this->pid . ' ]');
+        $this->info('Job queued [ ' . $pid. ' ]');
 
         // Validate class and method
-        if (!$this->validateClassAndMethod($this->jobClassName, $this->jobMethodName)) {
+        if (!$this->validateClassAndMethod($class, $method)) {
 
-            $errorMessage = 'Unregistered class or method. ' . $this->jobClassName . '::' . $this->jobMethodName;
+            $errorMessage = 'Unregistered class or method. ' . $class . '::' . $method;
 
             $this->error($errorMessage);
             $cj->description = $errorMessage;
@@ -83,25 +82,23 @@ class RunBackgroundJob extends Command
             return RunBackgroundJob::ERROR;
         }
         // Create an instance of the class that will be triggered by the JOB
-        $instance = app($this->jobClassName);
-
+        $instance = app($class);
+        
+        // Listen SIGNAL TO CANCEL JOB
         $this->trap([SIGTERM, SIGINT], function (int $signal) {
             $this->signal = $signal;
             return RunBackgroundJob::CANCELED;
         });
-        $this->maxRetries = config('background-jobs.max_retries', 3);
-        $this->retryDelay = config('background-jobs.retry_delay', 5); //retry delay in Seconds
+      //  $this->maxRetries = config('background-jobs.max_retries', 3);
+      //  $this->retryDelay = config('background-jobs.retry_delay', 5); //retry delay in Seconds
 
         try {
-            return retry($this->maxRetries, function (int $attempt) use ($instance, $cj) {
+            return retry($maxRetries, function (int $attempt) use ($instance, $cj,$method,$params) {
                 $cj->attempts = $attempt;
                 if ($this->signal) {
                     JobCanceled::dispatch($cj);
                     exit;
                 }
-
-                $method = $this->jobMethodName;
-                $params = $this->jobParams;
 
                 JobRunning::dispatch($cj);
 
@@ -109,13 +106,13 @@ class RunBackgroundJob extends Command
 
                 JobDone::dispatch($cj);
 
-            }, function (int $attempt, $exception) use ($cj) {
+            }, function (int $attempt, $exception) use ($cj,$maxRetries,$retryDelay) {
 
-                $cj->description = "Retrying (" . $attempt . "/" . $this->maxRetries . ") " . $exception->getMessage();
+                $cj->description = "Retrying (" . $attempt . "/" . $maxRetries . ") " . $exception->getMessage();
                 $cj->status = CustomJob::ERROR;
                 JobError::dispatch($cj);
 
-                return $this->retryDelay;
+                return $retryDelay;
             });
         } catch (Exception $exception) {
             $cj->status = CustomJob::ERROR;
