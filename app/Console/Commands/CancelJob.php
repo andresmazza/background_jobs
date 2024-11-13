@@ -34,7 +34,7 @@ class CancelJob extends Command
         }
 
         $runningPid = CustomJob::where(
-            ['pid',$pid],['status', CustomJob::RUNNING ]
+            ['pid' => $pid,'status' => CustomJob::RUNNING ]
             )->pluck('pid')->first();
 
         if (!$runningPid || !posix_kill($pid, 0)) {

@@ -107,14 +107,11 @@ class RunBackgroundJob extends Command
 
             }, function (int $attempt, $exception) use ($cj,$maxRetries,$retryDelay) {
 
-                // $cj->description = "Retrying (" . $attempt . "/" . $maxRetries . ") " . $exception->getMessage();
-                // $cj->status = CustomJob::ERROR;
                 EventJobError::dispatch($cj);
 
                 return $retryDelay;
             });
         } catch (Exception $exception) {
-            $cj->status = CustomJob::ERROR;
             $cj->description = $exception->getMessage();
             EventJobError::dispatch($cj);
         }

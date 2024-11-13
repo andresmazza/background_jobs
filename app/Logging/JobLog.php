@@ -23,7 +23,7 @@ class JobLog
     {
 
         $job = unserialize($customJob->payload);
-        $message = 'Job[' . $customJob->pid . '] - [' . $job->class . '::' . $job->method . '] - Status: Error  - ' . $customJob->description . '';
+        $message = 'Job[' . $customJob->pid . '] - [' . $job->class . '::' . $job->method . '] - Status: ERROR - ' . $customJob->description . '';
         if ($customJob->attempts >= $job->maxRetries) {
             $message .= ' - Max Retries Reached';
             Log::channel(channel: 'background_jobs')->info($message);
