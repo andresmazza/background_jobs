@@ -2,58 +2,48 @@
 
 namespace App\Listeners;
 
-use App\Events\JobCanceled;
-use App\Events\JobDone;
-use App\Events\JobError;
-use App\Events\JobQueued;
-use App\Events\JobRunning;
-use App\Models\CustomJob;
+use App\Events\EventJobCanceled;
+use App\Events\EventJobDone;
+use App\Events\EventJobError;
+use App\Events\EventJobQueued;
+use App\Events\EventJobRun;
+use App\Logging\JobLog;
 use Illuminate\Events\Dispatcher;
 
 class JobsEventSubscriber
 {
-    public function handleQueued(JobQueued $event) {
+    public function handleQueued(EventJobQueued $event)
+    {
 
         $customJob = $event->customJob;
-        $customJob->payload = serialize($customJob->payload);
-        $customJob->description = 'Queued';
-        
-        $customJob->save();
+        JobLog::info($customJob);
     }
 
-    public function handleRunning(JobRunning $event) {
+    public function handleRunning(EventJobRun $event)
+    {
         $customJob = $event->customJob;
-        $customJob->status = CustomJob::RUNNING;
-        $customJob->description = 'Running';
-
-        $customJob->save();
+        JobLog::info($customJob);
     }
 
-    public function handleDone(JobDone $event) {
+    public function handleDone(EventJobDone $event)
+    {
         $customJob = $event->customJob;
-        $customJob->status = CustomJob::SUCCESS;
-        $customJob->description = 'Done';
-
-        $customJob->save();
+        JobLog::info($customJob);
     }
 
-    public function handleError(JobError $event) {
+    public function handleError(EventJobError $event)
+    {
         $customJob = $event->customJob;
-        $customJob->status = CustomJob::ERROR;
-       
-        $customJob->save();
+        JobLog::error($customJob);
     }
 
-    public function handleCancel(JobError $event) {
+    public function handleCancel(EventJobCanceled $event)
+    {
         $customJob = $event->customJob;
-        $customJob->status = CustomJob::CANCELED;
-       
-        $customJob->save();
+        JobLog::info($customJob);
     }
- 
- 
- 
-   /**
+
+    /**
      * Register the listeners for the subscriber.
      *
      * @return array<string, string>
@@ -61,11 +51,11 @@ class JobsEventSubscriber
     public function subscribe(Dispatcher $events): array
     {
         return [
-            JobQueued::class     => 'handleQueued',
-            JobRunning::class    => 'handleRunning',
-            JobDone::class       => 'handleDone',
-            JobError::class      => 'handleError',
-            JobCanceled::class   => 'handleCancel',
+            EventJobQueued::class   => 'handleQueued',
+            EventJobRun::class      => 'handleRunning',
+            EventJobDone::class     => 'handleDone',
+            EventJobError::class    => 'handleError',
+            EventJobCanceled::class => 'handleCancel',
         ];
     }
 }

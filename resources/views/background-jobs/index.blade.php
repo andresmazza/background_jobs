@@ -16,15 +16,15 @@
                 @csrf
                 <div class="mb-4">
                     <label for="class" class="block mb-1">Class</label>
-                    <input type="text" name="class" id="class" required class="w-full p-2 border rounded">
+                    <input type="text" name="class" id="class" required class="w-full p-2 border rounded" value="App\Jobs\ExampleJob">
                 </div>
                 <div class="mb-4">
                     <label for="method" class="block mb-1">Method</label>
-                    <input type="text" name="method" id="method" required class="w-full p-2 border rounded">
+                    <input type="text" name="method" id="method" required class="w-full p-2 border rounded" value="handle">
                 </div>
                 <div class="mb-4">
-                    <label for="params" class="block mb-1">Parameters (comma-separated)</label>
-                    <input type="text" name="params" id="params" class="w-full p-2 border rounded">
+                    <label for="params" class="block mb-1">Parameters for example (sleep 5 seconds)</label>
+                    <input type="text" name="params" id="params" class="w-full p-2 border rounded" value="5">
                 </div>
                 <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Run Job</button>
             </form>

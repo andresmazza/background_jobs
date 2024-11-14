@@ -28,16 +28,16 @@ class BackgroundJobController extends Controller
     {
         $class = $request->input('class');
         $method = $request->input('method');
-        $params = $request->input('params', []);
+        $params = $request->input('params', null);
         try {
             runBackgroundJob($class, $method, $params);
         } catch (\Exception $e) {
             Log::channel(channel: 'background_jobs')->error('Queue Job: ' . $class . ' - ' . $method . ' - ' . json_encode($params) . ' - '. $e->getMessage());
 
         }
-        
 
         return redirect()->route('background-jobs.index')->with('success', 'Job started successfully');
     }
 
 }
+

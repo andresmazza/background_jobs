@@ -2,17 +2,15 @@
 
 namespace App\Events;
 
+use App\Logging\JobLog;
 use App\Models\CustomJob;
-use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
-use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 use Log;
 
-class JobQueued
+class EventJobRun
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -21,7 +19,14 @@ class JobQueued
      */
     public function __construct(public CustomJob $customJob)
     {
-        Log::channel('background_jobs')->info('Job[' . $customJob->pid . '] - Status: Queued' );
+        $payload = unserialize($customJob->payload);
+        $customJob->status = CustomJob::RUNNING;
+        $customJob->description = "RUNNING";
+        if ($customJob->attempts > 1) {
+            $customJob->description .= " retrying (" . $customJob->attempts . "/" . $payload->maxRetries . ")";
+        }
+        $customJob->save();
+
     }
 
 }

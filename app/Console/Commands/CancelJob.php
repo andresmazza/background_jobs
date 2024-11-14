@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\CustomJob;
 use Illuminate\Console\Command;
 
 class CancelJob extends Command
@@ -32,12 +33,16 @@ class CancelJob extends Command
             return 1;
         }
 
-        if (!posix_kill($pid, 0)) {
+        $runningPid = CustomJob::where(
+            ['pid' => $pid,'status' => CustomJob::RUNNING ]
+            )->pluck('pid')->first();
+
+        if (!$runningPid || !posix_kill($pid, 0)) {
             $this->error("Process with PID $pid does not exist.");
             return 1;
         }
 
-        if (posix_kill($pid, SIGTERM)) {
+        if ($runningPid && posix_kill($pid, SIGTERM)) {
             $this->info("SIGTERM signal sent to process $pid.");
             return 0;
         } else {

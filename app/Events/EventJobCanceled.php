@@ -2,13 +2,13 @@
 
 namespace App\Events;
 
+
 use App\Models\CustomJob;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
-use Log;
 
-class JobCanceled
+class EventJobCanceled
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -17,7 +17,9 @@ class JobCanceled
      */
     public function __construct(public CustomJob $customJob)
     {
-        Log::channel(channel: 'background_jobs')->info('Job[' . $customJob->pid . '] - Status: Canceled' );
-    }       
+        $customJob->status = CustomJob::CANCELED;
+        $customJob->description = "CANCELED";
+        $customJob->save();
+    }
 
 }
