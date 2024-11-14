@@ -123,6 +123,17 @@ class RunBackgroundJob extends Command
     }
 
 
+    /**
+     * Creates a payload object for the job
+     *
+     * @param string $class The class name of the job
+     * @param string $method The method name of the job
+     * @param array|string $params The parameters to pass to the method
+     * @param int $maxRetries The maximum number of retries
+     * @param int $retryDelay The delay in seconds between retries
+     *
+     * @return \stdClass
+     */
     public function createPayload($class, $method, $params, $maxRetries, $retryDelay)
     {
         $payload = new \stdClass();
