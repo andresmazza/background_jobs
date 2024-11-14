@@ -13,10 +13,6 @@ use Illuminate\Support\Facades\Config;
 use Mockery;
 use Mockery\MockInterface;
 
-// use Tests\TestCase;
-
-// uses(TestCase::class);
-
 beforeEach(function () {
    
     $this->command = new RunBackgroundJob();
@@ -58,59 +54,23 @@ it('creates a valid payload', function () {
         ->retryDelay->toBe(5);
 });
 
-// it('handles job execution and dispatches events', function () {
-//     Event::fake();
+it('handles job execution and dispatches events', function () {
+    Event::fake();
     
-//     Config::set('background-jobs.allowed_classes', ['App\Jobs\ExampleJob']);
+    Config::set('background-jobs.allowed_classes', ['App\Jobs\ExampleJob']);
     
-//     // Mock the job class
-//     $mockJob = Mockery::mock(ExampleJob::class);
+    // Mock the job class
+    $mockJob = Mockery::mock(ExampleJob::class);
    
-//     $mockJob->shouldReceive('handle')->once()->andReturn(null);
-//     $this->app->instance('App\Jobs\ExampleJob', $mockJob);
+    $mockJob->shouldReceive('handle')->once()->andReturn(null);
+    $this->app->instance('App\Jobs\ExampleJob', $mockJob);
     
-//     $this->artisan('job:run', [
-//         'class' => 'App\Jobs\ExampleJob',
-//         'method' => 'handle',
-//     ])->assertExitCode(RunBackgroundJob::SUCCESS);
+    $this->artisan('job:run', [
+        'class' => 'App\Jobs\ExampleJob',
+        'method' => 'handle',
+    ])->assertExitCode(RunBackgroundJob::SUCCESS);
 
-//     Event::assertDispatched(EventJobQueued::class);
-//     Event::assertDispatched(EventJobRun::class);
-//     Event::assertDispatched(EventJobDone::class);
-// });
-
-// it('handles job errors and dispatches EventJobError', function () {
-//     Event::fake();
-    
-//     Config::set('background-jobs.allowed_classes', ['App\Jobs\ExampleJob']);
-    
-//     // Mock the job class to throw an exception
-//     $mockJob = Mockery::mock(ExampleJob::class);
-//     $mockJob->shouldReceive('handle')->once()
-//     ->andThrow(new Exception('Test error'));
-//     $this->app->instance(ExampleJob::class, $mockJob);
-    
-//     $this->artisan('job:run', [
-//         'class' => 'App\Jobs\ExampleJob',
-//         'method' => 'handle'
-//     ])->assertExitCode(RunBackgroundJob::ERROR);
-
-//      Event::assertDispatched(EventJobError::class);
-// });
-
-// it('handles job cancellation and dispatches EventJobCanceled', function () {
-//     Event::fake();
-    
-//     Config::set('background-jobs.allowed_classes', ['App\Jobs\ExampleJob']);
-    
-//     // Simulate SIGTERM
-//     posix_kill(getmypid(), SIGTERM);
-    
-//     $this->artisan('job:run', [
-//         'class' => 'App\Jobs\ExampleJob',
-//         'method' => 'handle',
-//     ])->assertExitCode(15);
-
-//     //Event::assertDispatched(EventJobQueued::class);
-//     Event::assertDispatched(EventJobCanceled::class);
-// });
+    Event::assertDispatched(EventJobQueued::class);
+    Event::assertDispatched(EventJobRun::class);
+    Event::assertDispatched(EventJobDone::class);
+});
