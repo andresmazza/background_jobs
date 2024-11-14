@@ -2,7 +2,7 @@
 namespace App\Logging;
 
 use App\Models\CustomJob;
-use Log;
+use Illuminate\Support\Facades\Log;
 
 
 class JobLog

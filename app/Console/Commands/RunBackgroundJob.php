@@ -111,7 +111,7 @@ class RunBackgroundJob extends Command
     }
 
 
-    private function validateClassAndMethod($class, $method)
+    public function validateClassAndMethod($class, $method)
     {
         $class = str_replace('::class', '', $class);
 
@@ -123,7 +123,7 @@ class RunBackgroundJob extends Command
     }
 
 
-    private function createPayload($class, $method, $params, $maxRetries, $retryDelay)
+    public function createPayload($class, $method, $params, $maxRetries, $retryDelay)
     {
         $payload = new \stdClass();
         $payload->class = $class;

@@ -13,6 +13,10 @@ if (!function_exists('runBackgroundJob')) {
      */
     function runBackgroundJob($class, $method, $params = null, $options = [])
     {
+     
+        if (!$class || !$method) {
+            return;
+        }
         $command = "php " . base_path('artisan') . " job:run '$class' $method";
         if ($params) {
             $command .= " --params=" . escapeshellarg($params);

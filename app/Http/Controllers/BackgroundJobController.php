@@ -40,3 +40,4 @@ class BackgroundJobController extends Controller
     }
 
 }
+
