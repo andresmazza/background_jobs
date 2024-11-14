@@ -174,6 +174,48 @@ This project uses the Sail tool, which allows us to run the project with Docker.
 1 - Clone the repository
 
 ```bash
-
 git clone https://github.com/andresmazza/background_jobs.git
+```
+
+2 - Enter the project directory
+```bash
+cd background_jobs
+```
+
+3 - Install PHP dependencies
+```bash
+composer install
+```
+
+4 - Run the database migrations
+```shellscript
+./vendor/bin/sail artisan migrate
+```
+
+
+5 - To launch the project in Docker, we need to execute the following command:
+
+```shellscript
+ ./vendor/bin/sail up -d
+
+```
+
+6 - Running tests
+```shellscript
+./vendor/bin/sail artisan test
+```
+
+
+8 - Some examples running them from Docker
+```shellscript
+./vendor/bin/sail artisan job:run 'App\Jobs\ExampleJob' 'handle' --params=0
+
+Job queued [ 54 ]  
+
+```
+
+8 - Some examples running them from Docker
+```shellscript
+./vendor/bin/sail artisan job:cancel  54
+
 ```
